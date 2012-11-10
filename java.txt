@@ -1,0 +1,44 @@
+/usr/bin/java
+-XX:MaxPermSize=192m
+-Xms256m
+-Xmx4096m
+-Djava.library.path=bin/jsw/lib
+-classpath
+   bin/jsw/lib/wrapper-3.2.3.jar
+
+   lib/*.jar
+
+   ./lib/appcontext-3.2.jar
+   ./lib/javax.servlet-api-3.0.1.jar
+   ./lib/jetty-continuation-8.1.3.v20120416.jar
+   ./lib/jetty-deploy-8.1.3.v20120416.jar
+   ./lib/jetty-http-8.1.3.v20120416.jar
+   ./lib/jetty-io-8.1.3.v20120416.jar
+   ./lib/jetty-jmx-8.1.3.v20120416.jar
+   ./lib/jetty-rewrite-8.1.3.v20120416.jar
+   ./lib/jetty-security-8.1.3.v20120416.jar
+   ./lib/jetty-server-8.1.3.v20120416.jar
+   ./lib/jetty-servlet-8.1.3.v20120416.jar
+   ./lib/jetty-util-8.1.3.v20120416.jar
+   ./lib/jetty-webapp-8.1.3.v20120416.jar
+   ./lib/jetty-xml-8.1.3.v20120416.jar
+   ./lib/logback-classic-1.0.0.jar
+   ./lib/logback-core-1.0.0.jar
+   ./lib/nexus-bootstrap-2.2-01.jar
+   ./lib/nexus-logging-extras-appender-2.2-01.jar
+   ./lib/plexus-interpolation-1.14.jar
+   ./lib/sisu-jetty8-1.3.jar
+   ./lib/slf4j-api-1.6.4.jar
+   ./conf/
+-Dwrapper.key=yW50K6KOXWMvkgh7
+-Dwrapper.port=32000
+-Dwrapper.jvm.port.min=31000
+-Dwrapper.jvm.port.max=31999
+-Dwrapper.pid=81615
+-Dwrapper.version=3.2.3
+-Dwrapper.native_library=wrapper
+-Dwrapper.service=TRUE
+-Dwrapper.cpu.timeout=10
+-Dwrapper.jvmid=1
+org.sonatype.nexus.bootstrap.jsw.JswLauncher
+./conf/jetty.xml
