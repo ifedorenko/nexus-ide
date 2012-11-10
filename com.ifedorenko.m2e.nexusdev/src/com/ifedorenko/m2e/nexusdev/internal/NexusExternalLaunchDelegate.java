@@ -25,7 +25,7 @@ public class NexusExternalLaunchDelegate
     public String verifyMainTypeName( ILaunchConfiguration configuration )
         throws CoreException
     {
-        return "org.sonatype.nexus.bootstrap.jsw.JswLauncher";
+        return "org.sonatype.nexus.bootstrap.Launcher";
     }
 
     @Override
@@ -35,7 +35,7 @@ public class NexusExternalLaunchDelegate
 
         DirectoryScanner ds = new DirectoryScanner();
         ds.setBasedir( basedir );
-        ds.setIncludes( new String[] { "bin/jsw/lib/wrapper-*.jar", "lib/*.jar", "conf" } );
+        ds.setIncludes( new String[] { "lib/*.jar", "conf" } );
         ds.scan();
 
         List<String> cp = new ArrayList<String>();
@@ -65,7 +65,6 @@ public class NexusExternalLaunchDelegate
         throws CoreException
     {
         StringBuilder sb = new StringBuilder();
-        sb.append( "-Djava.library.path=bin/jsw/lib " );
         sb.append( super.getVMArguments( configuration ) );
         return sb.toString();
     }
