@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchDelegate"
+            id="com.ifedorenko.m2e.nexusdev.externalLaunchType"
+            modes="run,debug"
+            name="Nexus"
+            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchTabGroup"
+            id="com.ifedorenko.m2e.nexusdev.externalLaunchTabGroup"
+            type="com.ifedorenko.m2e.nexusdev.externalLaunchType">
+      </launchConfigurationTabGroup>
+   </extension>
+
+</plugin>
