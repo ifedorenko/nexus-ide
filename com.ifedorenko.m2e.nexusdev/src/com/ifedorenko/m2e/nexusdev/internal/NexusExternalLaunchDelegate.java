@@ -6,15 +6,70 @@ import java.util.List;
 
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.core.sourcelookup.ISourceLookupParticipant;
+import org.eclipse.jdt.internal.launching.JavaSourceLookupDirector;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
+import org.eclipse.jdt.launching.sourcelookup.containers.JavaSourceLookupParticipant;
 
+import com.ifedorenko.m2e.sourcelookup.internal.SourceLookupMavenLaunchParticipant;
+
+@SuppressWarnings( "restriction" )
 public class NexusExternalLaunchDelegate
     extends JavaLaunchDelegate
 {
     public static final String ATTR_INSTALLATION_LOCATION = "nexusdev.installationLocation";
+
+    private static final SourceLookupMavenLaunchParticipant sourcelookup = new SourceLookupMavenLaunchParticipant();
+
+    private ILaunch launch;
+
+    private IProgressMonitor monitor;
+
+    private String mode;
+
+    @Override
+    public void launch( final ILaunchConfiguration configuration, final String mode, final ILaunch launch,
+                        final IProgressMonitor monitor )
+        throws CoreException
+    {
+        this.mode = mode;
+        this.launch = launch;
+        this.monitor = monitor;
+        try
+        {
+            JavaSourceLookupDirector sourceLocator = new JavaSourceLookupDirector()
+            {
+                @Override
+                public void initializeParticipants()
+                {
+                    List<ISourceLookupParticipant> participants = new ArrayList<ISourceLookupParticipant>();
+                    if ( ILaunchManager.DEBUG_MODE.equals( mode ) )
+                    {
+                        participants.addAll( sourcelookup.getSourceLookupParticipants( configuration, launch, monitor ) );
+                    }
+                    participants.add( new JavaSourceLookupParticipant() );
+                    addParticipants( participants.toArray( new ISourceLookupParticipant[participants.size()] ) );
+                }
+            };
+            sourceLocator.initializeParticipants();
+
+            launch.setSourceLocator( sourceLocator );
+
+            super.launch( configuration, mode, launch, monitor );
+        }
+        finally
+        {
+            this.mode = null;
+            this.launch = null;
+            this.monitor = null;
+        }
+    }
 
     @Override
     public File verifyWorkingDirectory( ILaunchConfiguration configuration )
@@ -89,7 +144,19 @@ public class NexusExternalLaunchDelegate
         throws CoreException
     {
         StringBuilder sb = new StringBuilder();
-        sb.append( super.getVMArguments( configuration ) );
+        append( sb, super.getVMArguments( configuration ) );
+        if ( ILaunchManager.DEBUG_MODE.equals( mode ) )
+        {
+            append( sb, sourcelookup.getVMArguments( configuration, launch, monitor ) );
+        }
         return sb.toString();
+    }
+
+    private void append( StringBuilder sb, String str )
+    {
+        if ( str != null && !"".equals( str.trim() ) )
+        {
+            sb.append( ' ' ).append( str );
+        }
     }
 }
