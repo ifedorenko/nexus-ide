@@ -6,19 +6,43 @@ import java.util.List;
 
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 
 public class NexusExternalLaunchDelegate
     extends JavaLaunchDelegate
 {
-    File basedir = new File( "/opt/nexus/nexus-professional-2.2-01" );
+    public static final String ATTR_INSTALLATION_LOCATION = "nexusdev.installationLocation";
 
     @Override
     public File verifyWorkingDirectory( ILaunchConfiguration configuration )
         throws CoreException
     {
-        return basedir;
+        return getInstallationDirectory( configuration );
+    }
+
+    private File getInstallationDirectory( ILaunchConfiguration configuration )
+        throws CoreException
+    {
+        String location = configuration.getAttribute( ATTR_INSTALLATION_LOCATION, (String) null );
+
+        if ( location == null || "".equals( location.trim() ) )
+        {
+            throw new CoreException( new Status( IStatus.ERROR, NexusdevActivator.BUNDLE_ID,
+                                                 "Installation location is null" ) );
+        }
+
+        File directory = new File( location );
+
+        if ( !directory.isDirectory() )
+        {
+            throw new CoreException( new Status( IStatus.ERROR, NexusdevActivator.BUNDLE_ID,
+                                                 "Installation location is not a directory" ) );
+        }
+
+        return directory;
     }
 
     @Override
@@ -34,7 +58,7 @@ public class NexusExternalLaunchDelegate
     {
 
         DirectoryScanner ds = new DirectoryScanner();
-        ds.setBasedir( basedir );
+        ds.setBasedir( getInstallationDirectory( configuration ) );
         ds.setIncludes( new String[] { "lib/*.jar", "conf" } );
         ds.scan();
 

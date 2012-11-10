@@ -18,6 +18,7 @@ public class NexusExternalLaunchTabGroup
     public void createTabs( ILaunchConfigurationDialog dialog, String mode )
     {
         ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { //
+            new NexusExternalInstanceLaunchTab(), //
                 new JavaArgumentsTab(), //
                 new JavaClasspathTab(), //
                 new JavaJRETab(), //
