@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lifecycleMappingMetadata>
+  <pluginExecutions>
+    <pluginExecution>
+      <pluginExecutionFilter>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>app-lifecycle-maven-plugin</artifactId>
+        <goals>
+          <goal>generate-metadata</goal>
+          <goal>inject-artifact-handler</goal>
+        </goals>
+        <versionRange>[1.1,)</versionRange>
+      </pluginExecutionFilter>
+      <action>
+        <execute>
+          <runOnIncremental>false</runOnIncremental>
+        </execute>
+      </action>
+    </pluginExecution>
+    <pluginExecution>
+      <pluginExecutionFilter>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>app-lifecycle-maven-plugin</artifactId>
+        <versionRange>(1.1,)</versionRange>
+        <goals>
+          <goal>check-dependencies</goal>
+        </goals>
+      </pluginExecutionFilter>
+      <action>
+        <ignore />
+      </action>
+    </pluginExecution>
+    <pluginExecution>
+      <pluginExecutionFilter>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>yuicompressor-maven-plugin</artifactId>
+        <versionRange>(0.0.1,)</versionRange>
+        <goals>
+          <goal>aggregate</goal>
+        </goals>
+      </pluginExecutionFilter>
+      <action>
+        <ignore />
+      </action>
+    </pluginExecution>
+  </pluginExecutions>
+</lifecycleMappingMetadata>
