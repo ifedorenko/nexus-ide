@@ -23,5 +23,12 @@
    <extension
          point="org.eclipse.m2e.core.lifecycleMappingMetadataSource">
    </extension>
+   <extension
+         point="org.eclipse.m2e.core.projectConfigurators">
+      <configurator
+            class="com.ifedorenko.m2e.nexusdev.internal.NexusPluginXmlConfigurator"
+            id="com.ifedorenko.m2e.nexusdev.nexusPluginXml">
+      </configurator>
+   </extension>
 
 </plugin>

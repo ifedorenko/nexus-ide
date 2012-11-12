@@ -7,14 +7,13 @@
         <artifactId>app-lifecycle-maven-plugin</artifactId>
         <goals>
           <goal>generate-metadata</goal>
-          <goal>inject-artifact-handler</goal>
         </goals>
         <versionRange>[1.1,)</versionRange>
       </pluginExecutionFilter>
       <action>
-        <execute>
-          <runOnIncremental>false</runOnIncremental>
-        </execute>
+        <configurator>
+          <id>com.ifedorenko.m2e.nexusdev.nexusPluginXml</id>
+        </configurator>
       </action>
     </pluginExecution>
     <pluginExecution>
