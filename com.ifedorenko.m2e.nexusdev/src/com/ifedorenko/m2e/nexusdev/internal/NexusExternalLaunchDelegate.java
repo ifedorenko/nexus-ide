@@ -3,13 +3,23 @@ package com.ifedorenko.m2e.nexusdev.internal;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.XmlStreamWriter;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
 import org.codehaus.plexus.util.xml.Xpp3DomWriter;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -25,6 +35,7 @@ import org.eclipse.jdt.internal.launching.JavaSourceLookupDirector;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.sourcelookup.containers.JavaSourceLookupParticipant;
 import org.eclipse.m2e.core.MavenPlugin;
+import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 
 import com.ifedorenko.m2e.sourcelookup.internal.SourceLookupMavenLaunchParticipant;
@@ -189,22 +200,49 @@ public class NexusExternalLaunchDelegate
         Xpp3Dom artifactsDom = new Xpp3Dom( "artifacts" );
         repositoryDom.addChild( artifactsDom );
 
+        Set<ArtifactKey> processed = new LinkedHashSet<ArtifactKey>();
+
         for ( IMavenProjectFacade project : MavenPlugin.getMavenProjectRegistry().getProjects() )
         {
             IFolder output = root.getFolder( project.getOutputLocation() );
-            if ( "nexus-plugin".equals( project.getPackaging() ) && output.isAccessible() )
+            String packaging = project.getPackaging();
+            if ( "nexus-plugin".equals( packaging ) && output.isAccessible() )
             {
-                Xpp3Dom artifactDom = new Xpp3Dom( "artifact" );
+                ArtifactKey artifactKey = project.getArtifactKey();
+                if ( processed.add( artifactKey ) )
+                {
+                    addArtifact( artifactsDom, artifactKey, packaging, output.getLocation().toOSString() );
 
-                addChild( artifactDom, "location", output.getLocation().toOSString() );
+                    IFile nexusPluginXml =
+                        project.getProject().getWorkspace().getRoot().getFile( project.getOutputLocation().append( "META-INF/nexus/plugin.xml" ) );
 
-                addChild( artifactDom, "groupId", project.getArtifactKey().getGroupId() );
-                addChild( artifactDom, "artifactId", project.getArtifactKey().getArtifactId() );
-                addChild( artifactDom, "version", project.getArtifactKey().getVersion() );
-                addChild( artifactDom, "groupId", project.getArtifactKey().getGroupId() );
-                addChild( artifactDom, "type", project.getPackaging() );
+                    MavenProject mavenProject = project.getMavenProject( monitor );
+                    Map<ArtifactKey, Artifact> dependencies = toDependencyMap( mavenProject.getArtifacts() );
 
-                artifactsDom.addChild( artifactDom );
+                    try
+                    {
+                        Xpp3Dom dom =
+                            Xpp3DomBuilder.build( ReaderFactory.newPlatformReader( nexusPluginXml.getContents() ) );
+                        Xpp3Dom cp = dom.getChild( "classpathDependencies" );
+                        if ( cp != null )
+                        {
+                            for ( Xpp3Dom cpe : cp.getChildren( "classpathDependency" ) )
+                            {
+                                ArtifactKey dependencyKey = toDependencyKey( cpe );
+                                Artifact dependency = dependencies.get( dependencyKey );
+
+                                addArtifact( artifactsDom, dependencyKey, dependency.getType(),
+                                             dependency.getFile().getAbsolutePath() );
+                            }
+                        }
+                    }
+                    catch ( IOException e )
+                    {
+                    }
+                    catch ( XmlPullParserException e )
+                    {
+                    }
+                }
             }
         }
 
@@ -228,10 +266,51 @@ public class NexusExternalLaunchDelegate
         }
     }
 
+    private Map<ArtifactKey, Artifact> toDependencyMap( Set<Artifact> artifacts )
+    {
+        Map<ArtifactKey, Artifact> result = new LinkedHashMap<ArtifactKey, Artifact>();
+        for ( Artifact a : artifacts )
+        {
+            ArtifactKey k = new ArtifactKey( a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier() );
+            result.put( k, a );
+        }
+        return result;
+    }
+
+    private ArtifactKey toDependencyKey( Xpp3Dom cpe )
+    {
+        String groupId = cpe.getChild( "groupId" ).getValue();
+        String artifactId = cpe.getChild( "artifactId" ).getValue();
+        String version = cpe.getChild( "version" ).getValue();
+        String classifier = getChildText( cpe, "classifier" );
+
+        return new ArtifactKey( groupId, artifactId, version, classifier );
+    }
+
+    private void addArtifact( Xpp3Dom artifactsDom, ArtifactKey artifactKey, String packaging, String location )
+    {
+        Xpp3Dom artifactDom = new Xpp3Dom( "artifact" );
+        addChild( artifactDom, "location", location );
+        addChild( artifactDom, "groupId", artifactKey.getGroupId() );
+        addChild( artifactDom, "artifactId", artifactKey.getArtifactId() );
+        addChild( artifactDom, "version", artifactKey.getVersion() );
+        addChild( artifactDom, "groupId", artifactKey.getGroupId() );
+        addChild( artifactDom, "type", packaging );
+
+        artifactsDom.addChild( artifactDom );
+    }
+
     private static void addChild( Xpp3Dom dom, String name, String value )
     {
         Xpp3Dom child = new Xpp3Dom( name );
         child.setValue( value );
         dom.addChild( child );
     }
+
+    private String getChildText( Xpp3Dom dom, String childName )
+    {
+        Xpp3Dom child = dom.getChild( childName );
+        return child != null ? child.getValue() : null;
+    }
+
 }
