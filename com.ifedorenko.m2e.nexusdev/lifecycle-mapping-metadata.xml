@@ -20,7 +20,7 @@
       <pluginExecutionFilter>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>app-lifecycle-maven-plugin</artifactId>
-        <versionRange>(1.1,)</versionRange>
+        <versionRange>[1.1,)</versionRange>
         <goals>
           <goal>check-dependencies</goal>
         </goals>
@@ -33,13 +33,15 @@
       <pluginExecutionFilter>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>yuicompressor-maven-plugin</artifactId>
-        <versionRange>(0.0.1,)</versionRange>
+        <versionRange>[0.0.2,0.0.3]</versionRange>
         <goals>
           <goal>aggregate</goal>
         </goals>
       </pluginExecutionFilter>
       <action>
-        <ignore />
+        <execute>
+          <runOnIncremental>true</runOnIncremental>
+        </execute>
       </action>
     </pluginExecution>
   </pluginExecutions>
