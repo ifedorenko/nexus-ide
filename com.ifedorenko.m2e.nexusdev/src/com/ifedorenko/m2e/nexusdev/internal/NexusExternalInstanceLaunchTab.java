@@ -1,5 +1,6 @@
 package com.ifedorenko.m2e.nexusdev.internal;
 
+import static com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchDelegate.ATTR_APPLICATION_PORT;
 import static com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchDelegate.ATTR_INSTALLATION_LOCATION;
 import static com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchDelegate.ATTR_WORKDIR_LOCATION;
 
@@ -26,6 +27,8 @@ public class NexusExternalInstanceLaunchTab
     private Text installationLocation;
 
     private Text workdirLocation;
+
+    private Text applicationPort;
 
     /**
      * @wbp.parser.entryPoint
@@ -73,7 +76,31 @@ public class NexusExternalInstanceLaunchTab
         lblWorkdirLocation.setText( "Workdir location" );
 
         workdirLocation = new Text( composite, SWT.BORDER );
+        workdirLocation.addVerifyListener( new VerifyListener()
+        {
+            public void verifyText( VerifyEvent e )
+            {
+                setDirty( true );
+                updateLaunchConfigurationDialog();
+            }
+        } );
         workdirLocation.setLayoutData( new GridData( SWT.FILL, SWT.CENTER, true, false, 1, 1 ) );
+        new Label( composite, SWT.NONE );
+
+        Label lblApplicationPort = new Label( composite, SWT.NONE );
+        lblApplicationPort.setLayoutData( new GridData( SWT.RIGHT, SWT.CENTER, false, false, 1, 1 ) );
+        lblApplicationPort.setText( "Application port" );
+
+        applicationPort = new Text( composite, SWT.BORDER );
+        applicationPort.addVerifyListener( new VerifyListener()
+        {
+            public void verifyText( VerifyEvent e )
+            {
+                setDirty( true );
+                updateLaunchConfigurationDialog();
+            }
+        } );
+        applicationPort.setLayoutData( new GridData( SWT.FILL, SWT.CENTER, true, false, 1, 1 ) );
         new Label( composite, SWT.NONE );
     }
 
@@ -87,6 +114,7 @@ public class NexusExternalInstanceLaunchTab
     {
         initializeFrom( configuration, installationLocation, ATTR_INSTALLATION_LOCATION );
         initializeFrom( configuration, workdirLocation, ATTR_WORKDIR_LOCATION );
+        initializeFrom( configuration, applicationPort, ATTR_APPLICATION_PORT );
     }
 
     private void initializeFrom( ILaunchConfiguration configuration, Text field, String attr )
@@ -108,6 +136,7 @@ public class NexusExternalInstanceLaunchTab
     {
         configuration.setAttribute( ATTR_INSTALLATION_LOCATION, toString( installationLocation ) );
         configuration.setAttribute( ATTR_WORKDIR_LOCATION, toString( workdirLocation ) );
+        configuration.setAttribute( ATTR_APPLICATION_PORT, toString( applicationPort ) );
     }
 
     private String toString( Text field )

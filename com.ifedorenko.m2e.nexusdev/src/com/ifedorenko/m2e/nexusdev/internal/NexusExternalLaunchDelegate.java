@@ -49,6 +49,8 @@ public class NexusExternalLaunchDelegate
 
     public static final String ATTR_WORKDIR_LOCATION = "nexusdev.workdirLocation";
 
+    public static final String ATTR_APPLICATION_PORT = "nexusdev.applicationPort";
+
     private static final SourceLookupMavenLaunchParticipant sourcelookup = new SourceLookupMavenLaunchParticipant();
 
     private ILaunch launch;
@@ -191,6 +193,7 @@ public class NexusExternalLaunchDelegate
         }
         sb.append( " -Dnexus.nexus-work=" ).append( StringUtils.quoteAndEscape( getNexusWorkingDirectory( configuration ).getAbsolutePath(),
                                                                                 '"' ) );
+        sb.append( " -Djetty.application-port=" ).append( configuration.getAttribute( ATTR_APPLICATION_PORT, "8081" ) );
         return sb.toString();
     }
 
