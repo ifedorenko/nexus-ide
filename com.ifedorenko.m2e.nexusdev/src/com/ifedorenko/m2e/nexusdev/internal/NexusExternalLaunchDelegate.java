@@ -13,6 +13,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.XmlStreamWriter;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -45,6 +46,8 @@ public class NexusExternalLaunchDelegate
     extends JavaLaunchDelegate
 {
     public static final String ATTR_INSTALLATION_LOCATION = "nexusdev.installationLocation";
+
+    public static final String ATTR_WORKDIR_LOCATION = "nexusdev.workdirLocation";
 
     private static final SourceLookupMavenLaunchParticipant sourcelookup = new SourceLookupMavenLaunchParticipant();
 
@@ -82,7 +85,7 @@ public class NexusExternalLaunchDelegate
 
             launch.setSourceLocator( sourceLocator );
 
-            writePluginRepositoryXml( new File( getNexusWorkingDirectory(), "plugin-repository.xml" ) );
+            writePluginRepositoryXml( new File( getNexusWorkingDirectory( configuration ), "plugin-repository.xml" ) );
 
             super.launch( configuration, mode, launch, monitor );
         }
@@ -94,10 +97,18 @@ public class NexusExternalLaunchDelegate
         }
     }
 
-    private File getNexusWorkingDirectory()
+    private File getNexusWorkingDirectory( ILaunchConfiguration configuration )
+        throws CoreException
     {
-        // XXX
-        return new File( "/tmp/sonatype-work/nexus" );
+        // String defaultWorkdirLocation = ResourcesPlugin.getWorkspace().get;
+        String location = configuration.getAttribute( ATTR_WORKDIR_LOCATION, (String) null );
+
+        if ( location != null )
+        {
+            return new File( location ).getAbsoluteFile();
+        }
+
+        return new File( NexusdevActivator.getStateLocation().toFile(), configuration.getName() );
     }
 
     @Override
@@ -178,7 +189,8 @@ public class NexusExternalLaunchDelegate
         {
             append( sb, sourcelookup.getVMArguments( configuration, launch, monitor ) );
         }
-        sb.append( " -Dnexus-work=" ).append( getNexusWorkingDirectory().getAbsolutePath() );
+        sb.append( " -Dnexus.nexus-work=" ).append( StringUtils.quoteAndEscape( getNexusWorkingDirectory( configuration ).getAbsolutePath(),
+                                                                                '"' ) );
         return sb.toString();
     }
 

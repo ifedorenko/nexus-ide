@@ -1,6 +1,7 @@
 package com.ifedorenko.m2e.nexusdev.internal;
 
-import java.io.File;
+import static com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchDelegate.ATTR_INSTALLATION_LOCATION;
+import static com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchDelegate.ATTR_WORKDIR_LOCATION;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -23,6 +24,8 @@ public class NexusExternalInstanceLaunchTab
     extends AbstractLaunchConfigurationTab
 {
     private Text installationLocation;
+
+    private Text workdirLocation;
 
     /**
      * @wbp.parser.entryPoint
@@ -64,6 +67,14 @@ public class NexusExternalInstanceLaunchTab
             }
         } );
         btnBrowseInstallationLocation.setText( "Browse..." );
+
+        Label lblWorkdirLocation = new Label( composite, SWT.NONE );
+        lblWorkdirLocation.setLayoutData( new GridData( SWT.RIGHT, SWT.CENTER, false, false, 1, 1 ) );
+        lblWorkdirLocation.setText( "Workdir location" );
+
+        workdirLocation = new Text( composite, SWT.BORDER );
+        workdirLocation.setLayoutData( new GridData( SWT.FILL, SWT.CENTER, true, false, 1, 1 ) );
+        new Label( composite, SWT.NONE );
     }
 
     @Override
@@ -74,23 +85,35 @@ public class NexusExternalInstanceLaunchTab
     @Override
     public void initializeFrom( ILaunchConfiguration configuration )
     {
-        String location;
+        initializeFrom( configuration, installationLocation, ATTR_INSTALLATION_LOCATION );
+        initializeFrom( configuration, workdirLocation, ATTR_WORKDIR_LOCATION );
+    }
+
+    private void initializeFrom( ILaunchConfiguration configuration, Text field, String attr )
+    {
+        String value;
         try
         {
-            location = configuration.getAttribute( NexusExternalLaunchDelegate.ATTR_INSTALLATION_LOCATION, "" );
+            value = configuration.getAttribute( attr, "" );
         }
         catch ( CoreException e )
         {
-            location = "";
+            value = "";
         }
-        installationLocation.setText( location );
+        field.setText( value );
     }
 
     @Override
     public void performApply( ILaunchConfigurationWorkingCopy configuration )
     {
-        configuration.setAttribute( NexusExternalLaunchDelegate.ATTR_INSTALLATION_LOCATION,
-                                    installationLocation.getText() );
+        configuration.setAttribute( ATTR_INSTALLATION_LOCATION, toString( installationLocation ) );
+        configuration.setAttribute( ATTR_WORKDIR_LOCATION, toString( workdirLocation ) );
+    }
+
+    private String toString( Text field )
+    {
+        String text = field.getText();
+        return text != null && !text.trim().isEmpty() ? text : null;
     }
 
     @Override
@@ -103,13 +126,13 @@ public class NexusExternalInstanceLaunchTab
     public boolean canSave()
     {
         return true;
-//        String location = installationLocation.getText();
-//
-//        if ( location == null || "".equals( location.trim() ) )
-//        {
-//            return false;
-//        }
-//
-//        return new File( location ).isDirectory();
+        // String location = installationLocation.getText();
+        //
+        // if ( location == null || "".equals( location.trim() ) )
+        // {
+        // return false;
+        // }
+        //
+        // return new File( location ).isDirectory();
     }
 }
