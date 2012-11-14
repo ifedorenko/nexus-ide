@@ -259,7 +259,8 @@ public class NexusExternalLaunchDelegate
                                 ArtifactKey dependencyKey = toDependencyKey( cpe );
                                 Artifact dependency = dependencies.get( dependencyKey );
 
-                                addArtifact( artifactsDom, dependencyKey, dependency.getType(),
+                                addArtifact( artifactsDom, dependencyKey,
+                                             dependency.getArtifactHandler().getExtension(),
                                              dependency.getFile().getAbsolutePath() );
                             }
                         }
