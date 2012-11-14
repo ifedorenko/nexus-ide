@@ -87,7 +87,7 @@ public class NexusExternalLaunchDelegate
 
             launch.setSourceLocator( sourceLocator );
 
-            writePluginRepositoryXml( new File( getNexusWorkingDirectory( configuration ), "plugin-repository.xml" ) );
+            writePluginRepositoryXml( getPluginRepositoryXml( configuration ) );
 
             super.launch( configuration, mode, launch, monitor );
         }
@@ -97,6 +97,14 @@ public class NexusExternalLaunchDelegate
             this.launch = null;
             this.monitor = null;
         }
+    }
+
+    private File getPluginRepositoryXml( final ILaunchConfiguration configuration )
+        throws CoreException
+    {
+        File parent = new File( NexusdevActivator.getStateLocation().toFile(), configuration.getName() );
+        parent.mkdirs();
+        return new File( parent, "plugin-repository.xml" );
     }
 
     private File getNexusWorkingDirectory( ILaunchConfiguration configuration )
@@ -191,10 +199,15 @@ public class NexusExternalLaunchDelegate
         {
             append( sb, sourcelookup.getVMArguments( configuration, launch, monitor ) );
         }
-        sb.append( " -Dnexus.nexus-work=" ).append( StringUtils.quoteAndEscape( getNexusWorkingDirectory( configuration ).getAbsolutePath(),
-                                                                                '"' ) );
+        sb.append( " -Dnexus.nexus-work=" ).append( quote( getNexusWorkingDirectory( configuration ) ) );
+        sb.append( " -Dnexus.xml-plugin-repository=" ).append( quote( getPluginRepositoryXml( configuration ) ) );
         sb.append( " -Djetty.application-port=" ).append( configuration.getAttribute( ATTR_APPLICATION_PORT, "8081" ) );
         return sb.toString();
+    }
+
+    private String quote( File file )
+    {
+        return StringUtils.quoteAndEscape( file.getAbsolutePath(), '"' );
     }
 
     private void append( StringBuilder sb, String str )
