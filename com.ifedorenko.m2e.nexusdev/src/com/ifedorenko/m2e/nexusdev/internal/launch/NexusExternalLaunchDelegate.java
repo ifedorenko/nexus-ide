@@ -70,17 +70,17 @@ public class NexusExternalLaunchDelegate
         this.monitor = monitor;
         try
         {
+            final List<ISourceLookupParticipant> participants = new ArrayList<ISourceLookupParticipant>();
+            if ( ILaunchManager.DEBUG_MODE.equals( mode ) )
+            {
+                participants.addAll( sourcelookup.getSourceLookupParticipants( configuration, launch, monitor ) );
+            }
+            participants.add( new JavaSourceLookupParticipant() );
             JavaSourceLookupDirector sourceLocator = new JavaSourceLookupDirector()
             {
                 @Override
                 public void initializeParticipants()
                 {
-                    List<ISourceLookupParticipant> participants = new ArrayList<ISourceLookupParticipant>();
-                    if ( ILaunchManager.DEBUG_MODE.equals( mode ) )
-                    {
-                        participants.addAll( sourcelookup.getSourceLookupParticipants( configuration, launch, monitor ) );
-                    }
-                    participants.add( new JavaSourceLookupParticipant() );
                     addParticipants( participants.toArray( new ISourceLookupParticipant[participants.size()] ) );
                 }
             };
