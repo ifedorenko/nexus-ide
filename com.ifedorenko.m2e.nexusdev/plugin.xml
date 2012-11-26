@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchDelegate"
+            delegate="com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDelegate"
             id="com.ifedorenko.m2e.nexusdev.externalLaunchType"
             modes="run,debug"
             name="Nexus"
@@ -15,7 +15,7 @@
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            class="com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchTabGroup"
+            class="com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchTabGroup"
             id="com.ifedorenko.m2e.nexusdev.externalLaunchTabGroup"
             type="com.ifedorenko.m2e.nexusdev.externalLaunchType">
       </launchConfigurationTabGroup>
@@ -26,7 +26,7 @@
    <extension
          point="org.eclipse.m2e.core.projectConfigurators">
       <configurator
-            class="com.ifedorenko.m2e.nexusdev.internal.NexusPluginXmlConfigurator"
+            class="com.ifedorenko.m2e.nexusdev.internal.launch.NexusPluginXmlConfigurator"
             id="com.ifedorenko.m2e.nexusdev.nexusPluginXml">
       </configurator>
    </extension>

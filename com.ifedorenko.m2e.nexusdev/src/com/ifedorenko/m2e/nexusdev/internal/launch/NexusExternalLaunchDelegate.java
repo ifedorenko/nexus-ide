@@ -1,4 +1,4 @@
-package com.ifedorenko.m2e.nexusdev.internal;
+package com.ifedorenko.m2e.nexusdev.internal.launch;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +39,7 @@ import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 
+import com.ifedorenko.m2e.nexusdev.internal.NexusdevActivator;
 import com.ifedorenko.m2e.sourcelookup.internal.SourceLookupMavenLaunchParticipant;
 
 @SuppressWarnings( "restriction" )

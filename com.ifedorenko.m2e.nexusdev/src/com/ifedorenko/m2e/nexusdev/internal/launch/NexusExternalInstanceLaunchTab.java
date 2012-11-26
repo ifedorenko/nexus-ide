@@ -1,8 +1,8 @@
-package com.ifedorenko.m2e.nexusdev.internal;
+package com.ifedorenko.m2e.nexusdev.internal.launch;
 
-import static com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchDelegate.ATTR_APPLICATION_PORT;
-import static com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchDelegate.ATTR_INSTALLATION_LOCATION;
-import static com.ifedorenko.m2e.nexusdev.internal.NexusExternalLaunchDelegate.ATTR_WORKDIR_LOCATION;
+import static com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDelegate.ATTR_APPLICATION_PORT;
+import static com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDelegate.ATTR_INSTALLATION_LOCATION;
+import static com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDelegate.ATTR_WORKDIR_LOCATION;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;

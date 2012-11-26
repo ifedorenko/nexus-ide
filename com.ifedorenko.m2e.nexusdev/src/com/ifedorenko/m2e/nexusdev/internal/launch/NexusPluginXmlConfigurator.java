@@ -1,4 +1,4 @@
-package com.ifedorenko.m2e.nexusdev.internal;
+package com.ifedorenko.m2e.nexusdev.internal.launch;
 
 import java.util.Set;
 
