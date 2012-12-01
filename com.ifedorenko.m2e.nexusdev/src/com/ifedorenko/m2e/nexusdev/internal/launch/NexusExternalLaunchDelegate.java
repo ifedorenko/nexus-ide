@@ -38,7 +38,9 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaSourceLookupPartici
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
+import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 
+import com.ifedorenko.m2e.binaryproject.BinaryProjectPlugin;
 import com.ifedorenko.m2e.nexusdev.internal.NexusdevActivator;
 import com.ifedorenko.m2e.sourcelookup.internal.SourceLookupMavenLaunchParticipant;
 
@@ -59,6 +61,16 @@ public class NexusExternalLaunchDelegate
     private IProgressMonitor monitor;
 
     private String mode;
+
+    private final IMavenProjectRegistry projectRegistry;
+
+    private IWorkspaceRoot root;
+
+    public NexusExternalLaunchDelegate()
+    {
+        this.projectRegistry = MavenPlugin.getMavenProjectRegistry();
+        this.root = ResourcesPlugin.getWorkspace().getRoot();
+    }
 
     @Override
     public void launch( final ILaunchConfiguration configuration, final String mode, final ILaunch launch,
@@ -222,8 +234,6 @@ public class NexusExternalLaunchDelegate
     private void writePluginRepositoryXml( File pluginRepositoryXml )
         throws CoreException
     {
-        final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-
         Xpp3Dom repositoryDom = new Xpp3Dom( "plugin-repository" );
 
         Xpp3Dom artifactsDom = new Xpp3Dom( "artifacts" );
@@ -231,7 +241,7 @@ public class NexusExternalLaunchDelegate
 
         Set<ArtifactKey> processed = new LinkedHashSet<ArtifactKey>();
 
-        for ( IMavenProjectFacade project : MavenPlugin.getMavenProjectRegistry().getProjects() )
+        for ( IMavenProjectFacade project : projectRegistry.getProjects() )
         {
             IFolder output = root.getFolder( project.getOutputLocation() );
             String packaging = project.getPackaging();
@@ -318,9 +328,29 @@ public class NexusExternalLaunchDelegate
     }
 
     private void addArtifact( Xpp3Dom artifactsDom, ArtifactKey artifactKey, String packaging, String location )
+        throws CoreException
     {
+        String _location = null;
+        if ( location.endsWith( "/pom.xml" ) )
+        {
+            // TODO find a better way to identify and resolve workspace binary projects
+
+            IMavenProjectFacade facade =
+                projectRegistry.getMavenProject( artifactKey.getGroupId(), artifactKey.getArtifactId(),
+                                                 artifactKey.getVersion() );
+            if ( facade != null )
+            {
+                _location = facade.getProject().getPersistentProperty( BinaryProjectPlugin.QNAME_JAR );
+            }
+        }
+
+        if ( _location == null )
+        {
+            _location = location;
+        }
+
         Xpp3Dom artifactDom = new Xpp3Dom( "artifact" );
-        addChild( artifactDom, "location", location );
+        addChild( artifactDom, "location", _location );
         addChild( artifactDom, "groupId", artifactKey.getGroupId() );
         addChild( artifactDom, "artifactId", artifactKey.getArtifactId() );
         addChild( artifactDom, "version", artifactKey.getVersion() );
