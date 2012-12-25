@@ -270,9 +270,13 @@ public class NexusExternalLaunchDelegate
                                 ArtifactKey dependencyKey = toDependencyKey( cpe );
                                 Artifact dependency = dependencies.get( dependencyKey );
 
-                                addArtifact( artifactsDom, dependencyKey,
-                                             dependency.getArtifactHandler().getExtension(),
-                                             dependency.getFile().getAbsolutePath() );
+                                // dependency == null means workspace project was not fully resolved
+                                if ( dependency != null )
+                                {
+                                    addArtifact( artifactsDom, dependencyKey,
+                                                 dependency.getArtifactHandler().getExtension(),
+                                                 dependency.getFile().getAbsolutePath() );
+                                }
                             }
                         }
                     }
