@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="com.ifedorenko.m2e.nexusdev.feature_0.0.0.qualifier.jar" id="com.ifedorenko.m2e.nexusdev.feature" version="0.0.0">
+      <category name="nexus-ide"/>
+   </feature>
+   <category-def name="nexus-ide" label="Nexus IDE"/>
+</site>

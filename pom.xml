@@ -8,12 +8,26 @@
   <packaging>pom</packaging>
 
   <properties>
-    <tycho-version>0.15.0</tycho-version>
+    <tycho-version>0.16.0</tycho-version>
   </properties>
 
   <modules>
     <module>com.ifedorenko.m2e.nexusdev</module>
+    <module>com.ifedorenko.m2e.nexusdev.feature</module>
   </modules>
+
+  <repositories>
+    <repository>
+      <id>eclipse</id>
+      <url>http://download.eclipse.org/releases/kepler</url>
+      <layout>p2</layout>
+    </repository>
+    <repository>
+      <id>ifedorenko-m2e-extras</id>
+      <url>http://ifedorenko.github.com/m2e-extras/</url>
+      <layout>p2</layout>
+    </repository>
+  </repositories>
 
   <build>
     <plugins>
