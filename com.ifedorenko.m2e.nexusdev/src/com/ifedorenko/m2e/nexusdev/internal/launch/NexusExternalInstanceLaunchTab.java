@@ -4,15 +4,17 @@ import static com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDel
 import static com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDelegate.ATTR_INSTALLATION_LOCATION;
 import static com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDelegate.ATTR_WORKDIR_LOCATION;
 
+import java.io.File;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -45,14 +47,15 @@ public class NexusExternalInstanceLaunchTab
         lblInstallationLocation.setText( "Installation location" );
 
         installationLocation = new Text( composite, SWT.BORDER );
-        installationLocation.addVerifyListener( new VerifyListener()
+        final ModifyListener modifyListener = new ModifyListener()
         {
-            public void verifyText( VerifyEvent e )
+            public void modifyText( ModifyEvent e )
             {
                 setDirty( true );
                 updateLaunchConfigurationDialog();
             }
-        } );
+        };
+        installationLocation.addModifyListener( modifyListener );
         installationLocation.setLayoutData( new GridData( SWT.FILL, SWT.CENTER, true, false, 1, 1 ) );
 
         Button btnBrowseInstallationLocation = new Button( composite, SWT.NONE );
@@ -76,14 +79,7 @@ public class NexusExternalInstanceLaunchTab
         lblWorkdirLocation.setText( "Workdir location" );
 
         workdirLocation = new Text( composite, SWT.BORDER );
-        workdirLocation.addVerifyListener( new VerifyListener()
-        {
-            public void verifyText( VerifyEvent e )
-            {
-                setDirty( true );
-                updateLaunchConfigurationDialog();
-            }
-        } );
+        workdirLocation.addModifyListener( modifyListener );
         workdirLocation.setLayoutData( new GridData( SWT.FILL, SWT.CENTER, true, false, 1, 1 ) );
         new Label( composite, SWT.NONE );
 
@@ -92,14 +88,7 @@ public class NexusExternalInstanceLaunchTab
         lblApplicationPort.setText( "Application port" );
 
         applicationPort = new Text( composite, SWT.BORDER );
-        applicationPort.addVerifyListener( new VerifyListener()
-        {
-            public void verifyText( VerifyEvent e )
-            {
-                setDirty( true );
-                updateLaunchConfigurationDialog();
-            }
-        } );
+        applicationPort.addModifyListener( modifyListener );
         applicationPort.setLayoutData( new GridData( SWT.FILL, SWT.CENTER, true, false, 1, 1 ) );
         new Label( composite, SWT.NONE );
     }
@@ -152,16 +141,20 @@ public class NexusExternalInstanceLaunchTab
     }
 
     @Override
-    public boolean canSave()
+    public boolean isValid( ILaunchConfiguration config )
     {
-        return true;
-        // String location = installationLocation.getText();
-        //
-        // if ( location == null || "".equals( location.trim() ) )
-        // {
-        // return false;
-        // }
-        //
-        // return new File( location ).isDirectory();
+        try
+        {
+            String location = config.getAttribute( ATTR_INSTALLATION_LOCATION, (String) null );
+            if ( location == null || "".equals( location.trim() ) )
+            {
+                return false;
+            }
+            return new File( location ).isDirectory();
+        }
+        catch ( CoreException e )
+        {
+            return false;
+        }
     }
 }
