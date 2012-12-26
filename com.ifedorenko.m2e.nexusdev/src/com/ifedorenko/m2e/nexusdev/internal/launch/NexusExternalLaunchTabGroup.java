@@ -19,6 +19,7 @@ public class NexusExternalLaunchTabGroup
     {
         ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { //
             new NexusExternalInstanceLaunchTab(), //
+                new NexusPluginsLaunchTab(), //
                 new JavaArgumentsTab(), //
                 new JavaClasspathTab(), //
                 new JavaJRETab(), //

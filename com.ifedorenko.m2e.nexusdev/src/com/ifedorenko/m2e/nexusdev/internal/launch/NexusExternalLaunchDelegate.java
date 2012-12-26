@@ -54,6 +54,8 @@ public class NexusExternalLaunchDelegate
 
     public static final String ATTR_APPLICATION_PORT = "nexusdev.applicationPort";
 
+    public static final String ATTR_SELECTED_PROJECTS = "nexusdev.selectedProjects";
+
     private static final SourceLookupMavenLaunchParticipant sourcelookup = new SourceLookupMavenLaunchParticipant();
 
     private ILaunch launch;
@@ -100,7 +102,8 @@ public class NexusExternalLaunchDelegate
 
             launch.setSourceLocator( sourceLocator );
 
-            writePluginRepositoryXml( getPluginRepositoryXml( configuration ) );
+            writePluginRepositoryXml( getPluginRepositoryXml( configuration ),
+                                      SelectedProjects.fromLaunchConfig( configuration ) );
 
             super.launch( configuration, mode, launch, monitor );
         }
@@ -231,7 +234,7 @@ public class NexusExternalLaunchDelegate
         }
     }
 
-    private void writePluginRepositoryXml( File pluginRepositoryXml )
+    private void writePluginRepositoryXml( File pluginRepositoryXml, SelectedProjects selectedProjects )
         throws CoreException
     {
         Xpp3Dom repositoryDom = new Xpp3Dom( "plugin-repository" );
@@ -247,6 +250,11 @@ public class NexusExternalLaunchDelegate
             String packaging = project.getPackaging();
             if ( "nexus-plugin".equals( packaging ) && output.isAccessible() )
             {
+                if ( !selectedProjects.isSelected( project ) )
+                {
+                    continue;
+                }
+
                 ArtifactKey artifactKey = project.getArtifactKey();
                 if ( processed.add( artifactKey ) )
                 {
