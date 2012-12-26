@@ -48,6 +48,8 @@ import com.ifedorenko.m2e.sourcelookup.internal.SourceLookupMavenLaunchParticipa
 public class NexusExternalLaunchDelegate
     extends JavaLaunchDelegate
 {
+    public static final String LAUNCHTYPE_ID = "com.ifedorenko.m2e.nexusdev.externalLaunchType";
+
     public static final String ATTR_INSTALLATION_LOCATION = "nexusdev.installationLocation";
 
     public static final String ATTR_WORKDIR_LOCATION = "nexusdev.workdirLocation";

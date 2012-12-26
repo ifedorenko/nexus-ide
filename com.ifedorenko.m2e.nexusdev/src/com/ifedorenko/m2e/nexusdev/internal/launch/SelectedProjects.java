@@ -2,9 +2,11 @@ package com.ifedorenko.m2e.nexusdev.internal.launch;
 
 import static com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDelegate.ATTR_SELECTED_PROJECTS;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -21,6 +23,11 @@ public class SelectedProjects
         this.selectAll = selectedProjects == null;
         this.selectedProjects =
             selectedProjects != null ? new HashSet<String>( selectedProjects ) : new HashSet<String>();
+    }
+
+    public SelectedProjects( IProject project )
+    {
+        this( Collections.singleton( project.getName() ) );
     }
 
     public boolean isSelected( IMavenProjectFacade facade )
