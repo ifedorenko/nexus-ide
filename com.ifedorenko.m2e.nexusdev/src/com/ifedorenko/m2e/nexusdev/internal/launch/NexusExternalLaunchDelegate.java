@@ -368,7 +368,6 @@ public class NexusExternalLaunchDelegate
         addChild( artifactDom, "groupId", artifactKey.getGroupId() );
         addChild( artifactDom, "artifactId", artifactKey.getArtifactId() );
         addChild( artifactDom, "version", artifactKey.getVersion() );
-        addChild( artifactDom, "groupId", artifactKey.getGroupId() );
         addChild( artifactDom, "type", packaging );
 
         artifactsDom.addChild( artifactDom );
