@@ -325,7 +325,7 @@ public class NexusExternalLaunchDelegate
         Map<ArtifactKey, Artifact> result = new LinkedHashMap<ArtifactKey, Artifact>();
         for ( Artifact a : artifacts )
         {
-            ArtifactKey k = new ArtifactKey( a.getGroupId(), a.getArtifactId(), a.getVersion(), a.getClassifier() );
+            ArtifactKey k = new ArtifactKey( a.getGroupId(), a.getArtifactId(), a.getBaseVersion(), a.getClassifier() );
             result.put( k, a );
         }
         return result;
