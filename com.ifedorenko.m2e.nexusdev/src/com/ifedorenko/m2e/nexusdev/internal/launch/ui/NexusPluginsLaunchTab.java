@@ -1,4 +1,4 @@
-package com.ifedorenko.m2e.nexusdev.internal.launch;
+package com.ifedorenko.m2e.nexusdev.internal.launch.ui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
 import com.ifedorenko.m2e.binaryproject.BinaryProjectPlugin;
+import com.ifedorenko.m2e.nexusdev.internal.launch.SelectedProjects;
 
 @SuppressWarnings( "restriction" )
 public class NexusPluginsLaunchTab

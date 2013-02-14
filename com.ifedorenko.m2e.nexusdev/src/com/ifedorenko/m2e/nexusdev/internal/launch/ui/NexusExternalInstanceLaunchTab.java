@@ -1,4 +1,4 @@
-package com.ifedorenko.m2e.nexusdev.internal.launch;
+package com.ifedorenko.m2e.nexusdev.internal.launch.ui;
 
 import static com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDelegate.ATTR_APPLICATION_PORT;
 import static com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDelegate.ATTR_INSTALLATION_LOCATION;
