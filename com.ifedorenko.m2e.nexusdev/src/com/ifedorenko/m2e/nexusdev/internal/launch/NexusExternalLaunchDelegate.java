@@ -3,15 +3,20 @@ package com.ifedorenko.m2e.nexusdev.internal.launch;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.WriterFactory;
+import org.codehaus.plexus.util.io.RawInputStreamFacade;
 import org.codehaus.plexus.util.xml.XmlStreamWriter;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomWriter;
@@ -31,12 +36,15 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.eclipse.jdt.launching.sourcelookup.containers.JavaSourceLookupParticipant;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.ArtifactKey;
+import org.eclipse.m2e.core.embedder.IMaven;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 
 import com.ifedorenko.m2e.binaryproject.BinaryProjectPlugin;
 import com.ifedorenko.m2e.nexusdev.internal.NexusPluginXml;
 import com.ifedorenko.m2e.nexusdev.internal.NexusdevActivator;
+import com.ifedorenko.m2e.nexusdev.internal.preferences.NexusInstallation;
+import com.ifedorenko.m2e.nexusdev.internal.preferences.NexusInstallations;
 import com.ifedorenko.m2e.sourcelookup.internal.SourceLookupMavenLaunchParticipant;
 
 @SuppressWarnings( "restriction" )
@@ -45,6 +53,19 @@ public class NexusExternalLaunchDelegate
 {
     public static final String LAUNCHTYPE_ID = "com.ifedorenko.m2e.nexusdev.externalLaunchType";
 
+    /**
+     * Boolean. true==standard. false==custom.
+     */
+    public static final String ATTR_STANDARD_INSTALLATION = "nexusdev.standardInstallation";
+
+    /**
+     * String. Standard installation id.
+     */
+    public static final String ATTR_STANDARD_INSTALLATION_ID = "nexusdev.standardInstallationId";
+
+    /**
+     * String. Custom installation location.
+     */
     public static final String ATTR_INSTALLATION_LOCATION = "nexusdev.installationLocation";
 
     public static final String ATTR_WORKDIR_LOCATION = "nexusdev.workdirLocation";
@@ -53,9 +74,14 @@ public class NexusExternalLaunchDelegate
 
     public static final String ATTR_SELECTED_PROJECTS = "nexusdev.selectedProjects";
 
+    /**
+     * Boolean. true==automatically add required workspace plugins of selected projects.
+     */
     public static final String ATTR_ADD_REQUIRED_PLUGINS = "nexusdev.addRequiredPlugins";
 
     private static final SourceLookupMavenLaunchParticipant sourcelookup = new SourceLookupMavenLaunchParticipant();
+
+    private static final NexusInstallations installations = NexusInstallations.INSTANCE;
 
     private ILaunch launch;
 
@@ -146,6 +172,41 @@ public class NexusExternalLaunchDelegate
     private File getNexusInstallationDirectory( ILaunchConfiguration configuration )
         throws CoreException
     {
+        if ( configuration.getAttribute( ATTR_STANDARD_INSTALLATION, true ) )
+        {
+            String installationId = configuration.getAttribute( ATTR_STANDARD_INSTALLATION_ID, (String) null );
+
+            NexusInstallation installation;
+            if ( installationId != null )
+            {
+                installation = installations.getInstallation( installationId );
+                if ( installation == null )
+                {
+                    throw new CoreException( new Status( IStatus.ERROR, NexusdevActivator.BUNDLE_ID,
+                                                         "Unknown installation id " + installationId ) );
+                }
+            }
+            else
+            {
+                installation = installations.getDefaultInstallation();
+            }
+
+            IMaven maven = MavenPlugin.getMaven();
+            Artifact artifact =
+                maven.resolve( installation.getGroupId(), installation.getArtifactId(), installation.getVersion(),
+                               "zip", "bundle", null, monitor );
+
+            try
+            {
+                return unzipIfNecessary( installation, artifact );
+            }
+            catch ( IOException e )
+            {
+                throw new CoreException( new Status( IStatus.ERROR, NexusdevActivator.BUNDLE_ID,
+                                                     "Could not create nexus installation", e ) );
+            }
+        }
+
         String location = configuration.getAttribute( ATTR_INSTALLATION_LOCATION, (String) null );
 
         if ( location == null || "".equals( location.trim() ) )
@@ -159,10 +220,54 @@ public class NexusExternalLaunchDelegate
         if ( !directory.isDirectory() )
         {
             throw new CoreException( new Status( IStatus.ERROR, NexusdevActivator.BUNDLE_ID,
-                                                 "Installation location is not a directory" ) );
+                                                 "Installation location is not not found or not a directory" ) );
         }
 
         return directory;
+    }
+
+    private File unzipIfNecessary( NexusInstallation installation, Artifact artifact )
+        throws IOException
+    {
+        File location =
+            new File( NexusdevActivator.getStateLocation().toFile(), "installations/" + installation.getId() );
+        if ( location.isDirectory() && location.lastModified() > artifact.getFile().lastModified() )
+        {
+            return location;
+        }
+        FileUtils.deleteDirectory( location );
+        ZipFile zip = new ZipFile( artifact.getFile() );
+        try
+        {
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while ( entries.hasMoreElements() )
+            {
+                ZipEntry entry = entries.nextElement();
+                if ( !entry.isDirectory() )
+                {
+                    String name = entry.getName();
+                    if ( !name.startsWith( "nexus-" ) )
+                    {
+                        continue;
+                    }
+                    int idx = name.indexOf( '/' );
+                    if ( idx < 0 )
+                    {
+                        continue;
+                    }
+                    name = name.substring( idx + 1 );
+                    File target = new File( location, name );
+                    target.getParentFile().mkdirs();
+                    FileUtils.copyStreamToFile( new RawInputStreamFacade( zip.getInputStream( entry ) ), target );
+                }
+            }
+        }
+        finally
+        {
+            zip.close();
+        }
+        location.setLastModified( artifact.getFile().lastModified() );
+        return location;
     }
 
     @Override
