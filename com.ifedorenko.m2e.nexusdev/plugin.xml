@@ -26,7 +26,7 @@
    <extension
          point="org.eclipse.m2e.core.projectConfigurators">
       <configurator
-            class="com.ifedorenko.m2e.nexusdev.internal.launch.NexusPluginXmlConfigurator"
+            class="com.ifedorenko.m2e.nexusdev.internal.build.NexusPluginXmlConfigurator"
             id="com.ifedorenko.m2e.nexusdev.nexusPluginXml">
       </configurator>
    </extension>
