@@ -18,6 +18,21 @@
     </pluginExecution>
     <pluginExecution>
       <pluginExecutionFilter>
+        <groupId>org.sonatype.nexus</groupId>
+        <artifactId>nexus-plugin-bundle-maven-plugin</artifactId>
+        <goals>
+          <goal>generate-metadata</goal>
+        </goals>
+        <versionRange>[0,)</versionRange>
+      </pluginExecutionFilter>
+      <action>
+        <configurator>
+          <id>com.ifedorenko.m2e.nexusdev.nexusPluginXml</id>
+        </configurator>
+      </action>
+    </pluginExecution>
+    <pluginExecution>
+      <pluginExecutionFilter>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>app-lifecycle-maven-plugin</artifactId>
         <versionRange>[1.1,)</versionRange>
