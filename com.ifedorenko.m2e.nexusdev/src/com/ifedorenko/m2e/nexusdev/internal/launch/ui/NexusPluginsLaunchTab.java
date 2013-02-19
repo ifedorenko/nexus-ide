@@ -57,6 +57,42 @@ public class NexusPluginsLaunchTab
 
     private Button btnDeselectAll;
 
+    private Button btnOnlyShowSelected;
+
+    private ViewerFilter selectedFilter = new ViewerFilter()
+    {
+        @Override
+        public boolean select( Viewer viewer, Object parentElement, Object element )
+        {
+            if ( btnOnlyShowSelected.getSelection() && element instanceof IMavenProjectFacade )
+            {
+                return selectedProjects.isSelected( (IMavenProjectFacade) element );
+            }
+            return true;
+        }
+    };
+
+    private ViewerFilter nameFilter = new ViewerFilter()
+    {
+        @Override
+        public boolean select( Viewer viewer, Object parentElement, Object element )
+        {
+            if ( element instanceof IMavenProjectFacade )
+            {
+                String text = pluginFilter.getText();
+                if ( text != null )
+                {
+                    text = text.trim();
+                }
+                if ( text != null && !text.isEmpty() )
+                {
+                    return ( (IMavenProjectFacade) element ).getProject().getName().contains( text );
+                }
+            }
+            return true;
+        }
+    };
+
     /**
      * @wbp.parser.entryPoint
      */
@@ -102,32 +138,7 @@ public class NexusPluginsLaunchTab
         {
             public void modifyText( ModifyEvent e )
             {
-                String text = pluginFilter.getText();
-                if ( text != null )
-                {
-                    text = text.trim();
-                }
-                if ( text != null && !text.isEmpty() )
-                {
-                    final String _text = text;
-                    ViewerFilter filer = new ViewerFilter()
-                    {
-                        @Override
-                        public boolean select( Viewer viewer, Object parentElement, Object element )
-                        {
-                            if ( element instanceof IMavenProjectFacade )
-                            {
-                                return ( (IMavenProjectFacade) element ).getProject().getName().contains( _text );
-                            }
-                            return false;
-                        }
-                    };
-                    pluginViewer.setFilters( new ViewerFilter[] { filer } );
-                }
-                else
-                {
-                    pluginViewer.resetFilters();
-                }
+                pluginViewer.refresh();
             }
         } );
         pluginFilter.setLayoutData( new GridData( SWT.FILL, SWT.CENTER, false, false, 1, 1 ) );
@@ -246,6 +257,7 @@ public class NexusPluginsLaunchTab
                 return null;
             }
         } );
+        pluginViewer.setFilters( new ViewerFilter[] { nameFilter, selectedFilter } );
 
         Composite buttonsComposite = new Composite( pluginsComposite, SWT.NONE );
         GridLayout gl_buttonsComposite = new GridLayout( 1, false );
@@ -279,6 +291,20 @@ public class NexusPluginsLaunchTab
         } );
         btnDeselectAll.setLayoutData( new GridData( SWT.FILL, SWT.CENTER, true, false, 1, 1 ) );
         btnDeselectAll.setText( "Deselect all" );
+
+        Composite buttonsFillerComposite = new Composite( buttonsComposite, SWT.NONE );
+        buttonsFillerComposite.setLayoutData( new GridData( SWT.LEFT, SWT.CENTER, false, true, 1, 1 ) );
+
+        btnOnlyShowSelected = new Button( buttonsComposite, SWT.CHECK );
+        btnOnlyShowSelected.addSelectionListener( new SelectionAdapter()
+        {
+            @Override
+            public void widgetSelected( SelectionEvent e )
+            {
+                pluginViewer.refresh();
+            }
+        } );
+        btnOnlyShowSelected.setText( "Only show selected" );
     }
 
     @Override
