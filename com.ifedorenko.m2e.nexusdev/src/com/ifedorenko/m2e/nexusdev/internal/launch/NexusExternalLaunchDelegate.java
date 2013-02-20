@@ -53,6 +53,8 @@ public class NexusExternalLaunchDelegate
 
     public static final String ATTR_SELECTED_PROJECTS = "nexusdev.selectedProjects";
 
+    public static final String ATTR_ADD_REQUIRED_PLUGINS = "nexusdev.addRequiredPlugins";
+
     private static final SourceLookupMavenLaunchParticipant sourcelookup = new SourceLookupMavenLaunchParticipant();
 
     private ILaunch launch;
@@ -243,30 +245,9 @@ public class NexusExternalLaunchDelegate
 
         for ( IMavenProjectFacade project : projectRegistry.getProjects() )
         {
-            IFolder output = root.getFolder( project.getOutputLocation() );
-            String packaging = project.getPackaging();
-            if ( "nexus-plugin".equals( packaging ) && output.isAccessible() )
+            if ( selectedProjects.isSelected( project ) )
             {
-                if ( !selectedProjects.isSelected( project ) )
-                {
-                    continue;
-                }
-
-                ArtifactKey artifactKey = project.getArtifactKey();
-                if ( processed.add( artifactKey ) )
-                {
-                    addArtifact( artifactsDom, artifactKey, packaging, output.getLocation().toOSString() );
-
-                    NexusPluginXml nexusPluginXml = new NexusPluginXml( project, monitor );
-
-                    for ( Map.Entry<ArtifactKey, Artifact> entry : nexusPluginXml.getClasspathDependencies().entrySet() )
-                    {
-                        ArtifactKey dependencyKey = entry.getKey();
-                        Artifact dependency = entry.getValue();
-                        addArtifact( artifactsDom, dependencyKey, dependency.getArtifactHandler().getExtension(),
-                                     dependency.getFile().getAbsolutePath() );
-                    }
-                }
+                addWorkspacePlugin( artifactsDom, project, processed );
             }
         }
 
@@ -287,6 +268,45 @@ public class NexusExternalLaunchDelegate
         {
             throw new CoreException( new Status( IStatus.ERROR, NexusdevActivator.BUNDLE_ID,
                                                  "Could not write nexus plugin-repository.xlm file", e ) );
+        }
+    }
+
+    private void addWorkspacePlugin( Xpp3Dom artifactsDom, IMavenProjectFacade project, Set<ArtifactKey> processed )
+        throws CoreException
+    {
+        IFolder output = root.getFolder( project.getOutputLocation() );
+        String packaging = project.getPackaging();
+        if ( "nexus-plugin".equals( packaging ) && output.isAccessible() )
+        {
+            ArtifactKey artifactKey = project.getArtifactKey();
+            if ( processed.add( artifactKey ) )
+            {
+                addArtifact( artifactsDom, artifactKey, packaging, output.getLocation().toOSString() );
+
+                NexusPluginXml nexusPluginXml = new NexusPluginXml( project, monitor );
+
+                for ( Map.Entry<ArtifactKey, Artifact> entry : nexusPluginXml.getClasspathDependencies().entrySet() )
+                {
+                    ArtifactKey dependencyKey = entry.getKey();
+                    Artifact dependency = entry.getValue();
+                    addArtifact( artifactsDom, dependencyKey, dependency.getArtifactHandler().getExtension(),
+                                 dependency.getFile().getAbsolutePath() );
+                }
+
+                if ( launch.getLaunchConfiguration().getAttribute( ATTR_ADD_REQUIRED_PLUGINS, true ) )
+                {
+                    for ( Artifact dependency : nexusPluginXml.getPluginDependencies().values() )
+                    {
+                        IMavenProjectFacade other =
+                            projectRegistry.getMavenProject( dependency.getGroupId(), dependency.getArtifactId(),
+                                                             dependency.getBaseVersion() );
+                        if ( other != null && other.getFullPath( dependency.getFile() ) != null )
+                        {
+                            addWorkspacePlugin( artifactsDom, other, processed );
+                        }
+                    }
+                }
+            }
         }
     }
 

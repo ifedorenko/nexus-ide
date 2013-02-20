@@ -1,5 +1,7 @@
 package com.ifedorenko.m2e.nexusdev.internal.launch.ui;
 
+import static com.ifedorenko.m2e.nexusdev.internal.launch.NexusExternalLaunchDelegate.ATTR_ADD_REQUIRED_PLUGINS;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,6 +94,8 @@ public class NexusPluginsLaunchTab
             return true;
         }
     };
+
+    private Button btnAddRequiredPlugins;
 
     /**
      * @wbp.parser.entryPoint
@@ -266,7 +270,7 @@ public class NexusPluginsLaunchTab
         gl_buttonsComposite.horizontalSpacing = 0;
         gl_buttonsComposite.marginHeight = 0;
         buttonsComposite.setLayout( gl_buttonsComposite );
-        buttonsComposite.setLayoutData( new GridData( SWT.LEFT, SWT.FILL, false, true, 1, 1 ) );
+        buttonsComposite.setLayoutData( new GridData( SWT.LEFT, SWT.FILL, false, false, 1, 1 ) );
 
         btnSelectAll = new Button( buttonsComposite, SWT.NONE );
         btnSelectAll.addSelectionListener( new SelectionAdapter()
@@ -305,6 +309,12 @@ public class NexusPluginsLaunchTab
             }
         } );
         btnOnlyShowSelected.setText( "Only show selected" );
+
+        btnAddRequiredPlugins = new Button( composite, SWT.CHECK );
+        btnAddRequiredPlugins.setToolTipText( "Automatically include workspace plugins required by the plugins selected in the list above" );
+        btnAddRequiredPlugins.setSelection( true );
+        btnAddRequiredPlugins.setLayoutData( new GridData( SWT.LEFT, SWT.CENTER, false, false, 2, 1 ) );
+        btnAddRequiredPlugins.setText( "Add required workspace plugins" );
     }
 
     @Override
@@ -316,6 +326,14 @@ public class NexusPluginsLaunchTab
     public void initializeFrom( ILaunchConfiguration configuration )
     {
         selectedProjects = SelectedProjects.fromLaunchConfig( configuration );
+        try
+        {
+            btnAddRequiredPlugins.setSelection( configuration.getAttribute( ATTR_ADD_REQUIRED_PLUGINS, true ) );
+        }
+        catch ( CoreException e )
+        {
+            btnAddRequiredPlugins.setSelection( true );
+        }
         boolean selectAll = selectedProjects.isSelectAll();
         selectionCombo.select( selectAll ? SELECTION_ALLWORKSPACE : SELECTION_SELECTED );
         pluginViewer.getTree().setEnabled( !selectAll );
@@ -328,6 +346,7 @@ public class NexusPluginsLaunchTab
     public void performApply( ILaunchConfigurationWorkingCopy configuration )
     {
         selectedProjects.toLaunchConfig( configuration );
+        configuration.setAttribute( ATTR_ADD_REQUIRED_PLUGINS, btnAddRequiredPlugins.getSelection() );
     }
 
     @Override
