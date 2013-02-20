@@ -3,24 +3,18 @@ package com.ifedorenko.m2e.nexusdev.internal.launch;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.WriterFactory;
 import org.codehaus.plexus.util.xml.XmlStreamWriter;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
 import org.codehaus.plexus.util.xml.Xpp3DomWriter;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -41,6 +35,7 @@ import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 
 import com.ifedorenko.m2e.binaryproject.BinaryProjectPlugin;
+import com.ifedorenko.m2e.nexusdev.internal.NexusPluginXml;
 import com.ifedorenko.m2e.nexusdev.internal.NexusdevActivator;
 import com.ifedorenko.m2e.sourcelookup.internal.SourceLookupMavenLaunchParticipant;
 
@@ -262,39 +257,14 @@ public class NexusExternalLaunchDelegate
                 {
                     addArtifact( artifactsDom, artifactKey, packaging, output.getLocation().toOSString() );
 
-                    IFile nexusPluginXml =
-                        project.getProject().getWorkspace().getRoot().getFile( project.getOutputLocation().append( "META-INF/nexus/plugin.xml" ) );
+                    NexusPluginXml nexusPluginXml = new NexusPluginXml( project, monitor );
 
-                    MavenProject mavenProject = project.getMavenProject( monitor );
-                    Map<ArtifactKey, Artifact> dependencies = toDependencyMap( mavenProject.getArtifacts() );
-
-                    try
+                    for ( Map.Entry<ArtifactKey, Artifact> entry : nexusPluginXml.getClasspathDependencies().entrySet() )
                     {
-                        Xpp3Dom dom =
-                            Xpp3DomBuilder.build( ReaderFactory.newPlatformReader( nexusPluginXml.getContents() ) );
-                        Xpp3Dom cp = dom.getChild( "classpathDependencies" );
-                        if ( cp != null )
-                        {
-                            for ( Xpp3Dom cpe : cp.getChildren( "classpathDependency" ) )
-                            {
-                                ArtifactKey dependencyKey = toDependencyKey( cpe );
-                                Artifact dependency = dependencies.get( dependencyKey );
-
-                                // dependency == null means workspace project was not fully resolved
-                                if ( dependency != null )
-                                {
-                                    addArtifact( artifactsDom, dependencyKey,
-                                                 dependency.getArtifactHandler().getExtension(),
-                                                 dependency.getFile().getAbsolutePath() );
-                                }
-                            }
-                        }
-                    }
-                    catch ( IOException e )
-                    {
-                    }
-                    catch ( XmlPullParserException e )
-                    {
+                        ArtifactKey dependencyKey = entry.getKey();
+                        Artifact dependency = entry.getValue();
+                        addArtifact( artifactsDom, dependencyKey, dependency.getArtifactHandler().getExtension(),
+                                     dependency.getFile().getAbsolutePath() );
                     }
                 }
             }
@@ -318,27 +288,6 @@ public class NexusExternalLaunchDelegate
             throw new CoreException( new Status( IStatus.ERROR, NexusdevActivator.BUNDLE_ID,
                                                  "Could not write nexus plugin-repository.xlm file", e ) );
         }
-    }
-
-    private Map<ArtifactKey, Artifact> toDependencyMap( Set<Artifact> artifacts )
-    {
-        Map<ArtifactKey, Artifact> result = new LinkedHashMap<ArtifactKey, Artifact>();
-        for ( Artifact a : artifacts )
-        {
-            ArtifactKey k = new ArtifactKey( a.getGroupId(), a.getArtifactId(), a.getBaseVersion(), a.getClassifier() );
-            result.put( k, a );
-        }
-        return result;
-    }
-
-    private ArtifactKey toDependencyKey( Xpp3Dom cpe )
-    {
-        String groupId = cpe.getChild( "groupId" ).getValue();
-        String artifactId = cpe.getChild( "artifactId" ).getValue();
-        String version = cpe.getChild( "version" ).getValue();
-        String classifier = getChildText( cpe, "classifier" );
-
-        return new ArtifactKey( groupId, artifactId, version, classifier );
     }
 
     private void addArtifact( Xpp3Dom artifactsDom, ArtifactKey artifactKey, String packaging, String location )
@@ -378,12 +327,6 @@ public class NexusExternalLaunchDelegate
         Xpp3Dom child = new Xpp3Dom( name );
         child.setValue( value );
         dom.addChild( child );
-    }
-
-    private String getChildText( Xpp3Dom dom, String childName )
-    {
-        Xpp3Dom child = dom.getChild( childName );
-        return child != null ? child.getValue() : null;
     }
 
 }
