@@ -311,6 +311,15 @@ public class NexusPluginsLaunchTab
         btnOnlyShowSelected.setText( "Only show selected" );
 
         btnAddRequiredPlugins = new Button( composite, SWT.CHECK );
+        btnAddRequiredPlugins.addSelectionListener( new SelectionAdapter()
+        {
+            @Override
+            public void widgetSelected( SelectionEvent e )
+            {
+                setDirty( true );
+                updateLaunchConfigurationDialog();
+            }
+        } );
         btnAddRequiredPlugins.setToolTipText( "Automatically include workspace plugins required by the plugins selected in the list above" );
         btnAddRequiredPlugins.setSelection( true );
         btnAddRequiredPlugins.setLayoutData( new GridData( SWT.LEFT, SWT.CENTER, false, false, 2, 1 ) );
