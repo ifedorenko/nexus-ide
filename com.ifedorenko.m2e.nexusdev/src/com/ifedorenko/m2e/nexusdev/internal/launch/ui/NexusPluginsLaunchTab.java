@@ -329,6 +329,8 @@ public class NexusPluginsLaunchTab
     @Override
     public void setDefaults( ILaunchConfigurationWorkingCopy configuration )
     {
+        configuration.setAttribute( ATTR_ADD_REQUIRED_PLUGINS, false );
+        new SelectedProjects().toLaunchConfig( configuration );
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.ifedorenko.m2e.nexusdev.internal.preferences;
 
-
 public class NexusInstallation
 {
     private final String kind;

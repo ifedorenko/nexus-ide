@@ -30,6 +30,11 @@ public class SelectedProjects
         this( Collections.singleton( project.getName() ) );
     }
 
+    public SelectedProjects()
+    {
+        this( Collections.<String> emptySet() );
+    }
+
     public boolean isSelected( IMavenProjectFacade facade )
     {
         return selectAll || selectedProjects == null || selectedProjects.contains( facade.getProject().getName() );
