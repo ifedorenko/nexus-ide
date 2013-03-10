@@ -278,10 +278,11 @@ public class NexusExternalInstanceLaunchTab
     {
         btnRadioStandard.setSelection( standard );
         standardInstallation.setEnabled( standard );
+        btnBrowseInstallationLocation.setEnabled( standard );
         // btnStandardAutoupdate.setEnabled( standard );
 
         btnRadioCustom.setSelection( !standard );
         installationLocation.setEnabled( !standard );
-        // btnBrowseInstallationLocation.setEnabled( !standard );
+        btnBrowseInstallationLocation.setEnabled( !standard );
     }
 }
