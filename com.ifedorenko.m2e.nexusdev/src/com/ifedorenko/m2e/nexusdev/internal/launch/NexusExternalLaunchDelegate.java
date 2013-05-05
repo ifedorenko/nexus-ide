@@ -30,10 +30,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.core.sourcelookup.ISourceLookupParticipant;
-import org.eclipse.jdt.internal.launching.JavaSourceLookupDirector;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
-import org.eclipse.jdt.launching.sourcelookup.containers.JavaSourceLookupParticipant;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.embedder.IMaven;
@@ -79,8 +76,6 @@ public class NexusExternalLaunchDelegate
      */
     public static final String ATTR_ADD_REQUIRED_PLUGINS = "nexusdev.addRequiredPlugins";
 
-    private static final SourceLookupMavenLaunchParticipant sourcelookup = new SourceLookupMavenLaunchParticipant();
-
     private static final NexusInstallations installations = NexusInstallations.INSTANCE;
 
     private ILaunch launch;
@@ -109,23 +104,7 @@ public class NexusExternalLaunchDelegate
         this.monitor = monitor;
         try
         {
-            final List<ISourceLookupParticipant> participants = new ArrayList<ISourceLookupParticipant>();
-            if ( ILaunchManager.DEBUG_MODE.equals( mode ) )
-            {
-                participants.addAll( sourcelookup.getSourceLookupParticipants( configuration, launch, monitor ) );
-            }
-            participants.add( new JavaSourceLookupParticipant() );
-            JavaSourceLookupDirector sourceLocator = new JavaSourceLookupDirector()
-            {
-                @Override
-                public void initializeParticipants()
-                {
-                    addParticipants( participants.toArray( new ISourceLookupParticipant[participants.size()] ) );
-                }
-            };
-            sourceLocator.initializeParticipants();
-
-            launch.setSourceLocator( sourceLocator );
+            launch.setSourceLocator( SourceLookupMavenLaunchParticipant.newSourceLocator( mode ) );
 
             writePluginRepositoryXml( getPluginRepositoryXml( configuration ),
                                       SelectedProjects.fromLaunchConfig( configuration ) );
@@ -317,7 +296,7 @@ public class NexusExternalLaunchDelegate
         append( sb, super.getVMArguments( configuration ) );
         if ( ILaunchManager.DEBUG_MODE.equals( mode ) )
         {
-            append( sb, sourcelookup.getVMArguments( configuration, launch, monitor ) );
+            append( sb, SourceLookupMavenLaunchParticipant.getVMArguments() );
         }
         sb.append( " -Dnexus.nexus-work=" ).append( quote( getNexusWorkingDirectory( configuration ) ) );
         sb.append( " -Dnexus.xml-plugin-repository=" ).append( quote( getPluginRepositoryXml( configuration ) ) );
