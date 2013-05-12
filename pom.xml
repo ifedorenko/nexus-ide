@@ -10,6 +10,11 @@
   <properties>
     <tycho.version>0.16.0</tycho.version>
     <tycho-extras.version>${tycho.version}</tycho-extras.version>
+    <repositoryPathId>nexuside</repositoryPathId>
+    <p2MetadataName>Nexus IDE</p2MetadataName>
+    <serverIdInSettingsXml>m2e.extras</serverIdInSettingsXml>
+    <repositoryUrl>http://repository.tesla.io:8081/nexus/service/local/repositories/m2e.extras/content-compressed/</repositoryUrl>
+    <repositoryPath>${repositoryPathId}/${unqualifiedVersion}/N/${unqualifiedVersion}.${buildQualifier}</repositoryPath>        
   </properties>
 
   <modules>
@@ -72,8 +77,21 @@
             </baselineRepositories>
           </configuration>
         </plugin>
+       <!--                                                                                                                                                                                                                 
+         |                                                                                                                                                                                                                   
+         | We only care about deploying the update site. Disable the deployment of the standard                                                                                                                              
+         | Maven resources and only deploy the update site in the feature build which is defined                                                                                                                             
+         | in the feature-build profile below.                                                                                                                                                                               
+         |                                                                                                                                                                                                                   
+         -->                                                                                                                                                                                                                 
+        <plugin>                                                                                                                                                                                                             
+          <groupId>org.apache.maven.plugins</groupId>                                                                                                                                                                        
+          <artifactId>maven-deploy-plugin</artifactId>                                                                                                                                                                       
+          <configuration>                                                                                                                                                                                                    
+            <skip>true</skip>                                                                                                                                                                                                
+          </configuration>                                                                                                                                                                                                   
+        </plugin>                       
       </plugins>
     </pluginManagement>
   </build>
-
 </project>
