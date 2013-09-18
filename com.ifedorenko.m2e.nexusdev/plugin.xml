@@ -11,6 +11,14 @@
             sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
             sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
       </launchConfigurationType>
+      <launchConfigurationType
+            delegate="com.ifedorenko.m2e.nexusdev.internal.launch.NexusPluginITLaunchDelegate"
+            id="com.ifedorenko.m2e.nexusdev.pluginITLaunchType"
+            modes="run,debug"
+            name="Nexus Plugin IT"
+            sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
@@ -18,6 +26,11 @@
             class="com.ifedorenko.m2e.nexusdev.internal.launch.ui.NexusExternalLaunchTabGroup"
             id="com.ifedorenko.m2e.nexusdev.externalLaunchTabGroup"
             type="com.ifedorenko.m2e.nexusdev.externalLaunchType">
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="com.ifedorenko.m2e.nexusdev.internal.launch.ui.NexusPluginITLaunchTabGroup"
+            id="com.ifedorenko.m2e.nexusdev.pluginITLaunchTabGroup"
+            type="com.ifedorenko.m2e.nexusdev.pluginITLaunchType">
       </launchConfigurationTabGroup>
    </extension>
    <extension
@@ -50,29 +63,62 @@
                   mode="debug">
             </contextLabel>
             <enablement>
-               <count
-                     value="1">
-               </count>
-               <iterate>
-                  <or>
-                     <adapt
-                           type="org.eclipse.core.resources.IFile">
-                        <test
-                              property="org.eclipse.core.resources.name"
-                              value="pom.xml">
-                        </test>
-                     </adapt>
-                     <adapt
-                           type="org.eclipse.core.resources.IProject">
-                        <test
-                              property="org.eclipse.core.resources.projectNature"
-                              value="org.eclipse.m2e.core.maven2Nature">
-                        </test>
-                     </adapt>
-                  </or>
-               </iterate>
+               <reference
+                     definitionId="com.ifedorenko.m2e.nexusdev.mavenProject">
+               </reference>
             </enablement>
          </contextualLaunch>
       </shortcut>
+      <shortcut
+            class="com.ifedorenko.m2e.nexusdev.internal.launch.NexusPluginITLaunchShortcut"
+            id="com.ifedorenko.m2e.nexusdev.pluginITLaunchType"
+            label="Nexus Plugin IT"
+            modes="run,debug">
+         <configurationType
+               id="com.ifedorenko.m2e.nexusdev.pluginITLaunchType"></configurationType>
+         <contextualLaunch>
+            <contextLabel
+                  label="Nexus Plugin IT"
+                  mode="run">
+            </contextLabel>
+            <contextLabel
+                  label="Nexus Plugin IT"
+                  mode="debug">
+            </contextLabel>
+            <enablement>
+               <reference
+                     definitionId="com.ifedorenko.m2e.nexusdev.mavenProject">
+               </reference>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.definitions">
+      <definition
+            id="com.ifedorenko.m2e.nexusdev.mavenProject">
+         <and>
+            <count
+                  value="1">
+            </count>
+            <iterate>
+               <or>
+                  <adapt
+                        type="org.eclipse.core.resources.IFile">
+                     <test
+                           property="org.eclipse.core.resources.name"
+                           value="pom.xml">
+                     </test>
+                  </adapt>
+                  <adapt
+                        type="org.eclipse.core.resources.IProject">
+                     <test
+                           property="org.eclipse.core.resources.projectNature"
+                           value="org.eclipse.m2e.core.maven2Nature">
+                     </test>
+                  </adapt>
+               </or>
+            </iterate></and>
+      </definition>
    </extension>
 </plugin>
