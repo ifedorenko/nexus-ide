@@ -1,25 +1,12 @@
 package com.ifedorenko.m2e.nexusdev.internal.launch;
 
-import org.eclipse.debug.ui.ILaunchShortcut;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorPart;
+import org.eclipse.jdt.junit.launcher.JUnitLaunchShortcut;
 
 public class NexusPluginITLaunchShortcut
-    implements ILaunchShortcut
+    extends JUnitLaunchShortcut
 {
-
-    @Override
-    public void launch( ISelection selection, String mode )
+    protected String getLaunchConfigurationTypeId()
     {
-        // TODO Auto-generated method stub
-
+        return "com.ifedorenko.m2e.nexusdev.pluginITLaunchType";
     }
-
-    @Override
-    public void launch( IEditorPart editor, String mode )
-    {
-        // TODO Auto-generated method stub
-
-    }
-
 }
