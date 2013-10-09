@@ -63,13 +63,13 @@ public class SelectedProjects
         }
     }
 
-    @SuppressWarnings( "unchecked" )
+    @SuppressWarnings( { "unchecked", "rawtypes" } )
     public static SelectedProjects fromLaunchConfig( ILaunchConfiguration config )
     {
         Set<String> selectedProjects;
         try
         {
-            selectedProjects = config.getAttribute( ATTR_SELECTED_PROJECTS, (Set<?>) null );
+            selectedProjects = config.getAttribute( ATTR_SELECTED_PROJECTS, (Set) null );
         }
         catch ( CoreException e )
         {
